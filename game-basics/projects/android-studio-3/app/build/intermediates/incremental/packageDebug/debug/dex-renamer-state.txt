@@ -1,0 +1,4 @@
+#Wed Jan 24 23:19:19 CET 2018
+base.0=D\:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\basics-simple-example\\projects\\android-studio-3\\app\\build\\intermediates\\transforms\\dexMerger\\debug\\0
+path.0=classes.dex
+renamed.0=classes.dex
