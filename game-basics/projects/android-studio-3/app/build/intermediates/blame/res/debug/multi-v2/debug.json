@@ -1,10 +1,10 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\basics-simple-example\\projects\\android-studio-3\\app\\build\\intermediates\\res\\merged\\debug\\values_values.arsc.flat",
+            "outputFile": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\projects\\android-studio-3\\app\\build\\intermediates\\res\\merged\\debug\\values_values.arsc.flat",
             "map": [
                 {
-                    "source": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\basics-simple-example\\projects\\android-studio-3\\app\\src\\main\\res\\values\\strings.xml",
+                    "source": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\projects\\android-studio-3\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
                         "startLines": "1",
                         "startColumns": "4",
