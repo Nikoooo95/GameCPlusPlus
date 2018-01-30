@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
-    package="edu.esne.basicsworkbench.test">
+    package="edu.esne.basicspong.test">
 
     <uses-sdk android:minSdkVersion="14" android:targetSdkVersion="26" />
 
@@ -9,8 +9,8 @@
     </application>
 
     <instrumentation android:name="android.support.test.runner.AndroidJUnitRunner"
-                     android:targetPackage="edu.esne.basicsworkbench"
+                     android:targetPackage="edu.esne.basicspong"
                      android:handleProfiling="false"
                      android:functionalTest="false"
-                     android:label="Tests for edu.esne.basicsworkbench"/>
+                     android:label="Tests for edu.esne.basicspong"/>
 </manifest>

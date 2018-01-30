@@ -6,6 +6,8 @@
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
  * angel.rodriguez@esne.edu
+ *
+ * C1801231014
  */
 
 #ifndef BASICS_TEXTURE_2D_HEADER
@@ -27,6 +29,8 @@
 
             struct Options
             {
+                unsigned width;
+                unsigned height;
             };
 
         public:
@@ -55,7 +59,33 @@
 
         protected:
 
+            float width;
+            float height;
+
+        protected:
+
+            Texture_2D(unsigned width, unsigned height)
+            :
+                width (float(width )),
+                height(float(height))
+            {
+            }
+
+        public:
+
             virtual ~Texture_2D() = default;
+
+        public:
+
+            float get_width () const
+            {
+                return width;
+            }
+
+            float get_height () const
+            {
+                return height;
+            }
 
         };
 
