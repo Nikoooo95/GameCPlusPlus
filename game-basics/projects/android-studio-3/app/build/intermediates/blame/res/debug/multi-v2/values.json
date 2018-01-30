@@ -1,42 +1,39 @@
 {
     "logs": [
         {
-            "outputFile": "D:\\Usuarios\\Nicolas\\Escritorio\\angel-esne-basics-examples-bb59d8fad3a9\\pong\\projects\\android-studio-3\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
+            "outputFile": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\projects\\android-studio-3\\app\\build\\intermediates\\incremental\\mergeDebugResources\\merged.dir\\values\\values.xml",
             "map": [
                 {
-                    "source": "D:\\Usuarios\\Nicolas\\Escritorio\\angel-esne-basics-examples-bb59d8fad3a9\\pong\\projects\\android-studio-3\\app\\src\\main\\res\\values\\styles.xml",
+                    "source": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\projects\\android-studio-3\\app\\src\\main\\res\\values\\styles.xml",
                     "from": {
-                        "startLines": "2",
-                        "startColumns": "4",
-                        "startOffsets": "57",
-                        "endLines": "5",
-                        "endColumns": "12",
-                        "endOffsets": "243"
+                        "startLines": "-1",
+                        "startColumns": "-1",
+                        "startOffsets": "-1"
                     },
                     "to": {
                         "startLines": "3",
                         "startColumns": "4",
-                        "startOffsets": "106",
+                        "startOffsets": "109",
                         "endLines": "6",
                         "endColumns": "12",
-                        "endOffsets": "289"
+                        "endOffsets": "292"
                     }
                 },
                 {
-                    "source": "D:\\Usuarios\\Nicolas\\Escritorio\\angel-esne-basics-examples-bb59d8fad3a9\\pong\\projects\\android-studio-3\\app\\src\\main\\res\\values\\strings.xml",
+                    "source": "D:\\Usuarios\\Nicolas\\Documentos\\GameCPlusPlus\\game-basics\\projects\\android-studio-3\\app\\src\\main\\res\\values\\strings.xml",
                     "from": {
                         "startLines": "1",
                         "startColumns": "4",
                         "startOffsets": "17",
-                        "endColumns": "50",
-                        "endOffsets": "63"
+                        "endColumns": "53",
+                        "endOffsets": "66"
                     },
                     "to": {
                         "startLines": "2",
                         "startColumns": "4",
                         "startOffsets": "55",
-                        "endColumns": "50",
-                        "endOffsets": "101"
+                        "endColumns": "53",
+                        "endOffsets": "104"
                     }
                 }
             ]

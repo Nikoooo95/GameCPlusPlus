@@ -92,11 +92,21 @@
             Texture_Map    textures;                            ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas.
             Sprite_List    sprites;                             ///< Lista en la que se guardan shared_ptr a los sprites creados.
 
-            Sprite       * top_border;                          ///< Puntero al sprite de la lista de sprites que representa el borde superior.
+
+            Sprite * arrow_left;
+            Sprite * arrow_right;
+            Sprite * background;
+            Sprite * character;
+            Sprite * down_border;
+            Sprite * pause_button;
+            Sprite * platform;
+            Sprite * top_border;
+
+            /*Sprite       * top_border;                          ///< Puntero al sprite de la lista de sprites que representa el borde superior.
             Sprite       * bottom_border;                       ///< Puntero al sprite de la lista de sprites que representa el borde inferior.
             Sprite       * left_player;                         ///< Puntero al sprite de la lista de sprites que representa al jugador izquierdo.
-            Sprite       * right_player;                        ///< Puntero al sprite de la lista de sprites que representa al jugador derecho.
-            Sprite       * ball;                                ///< Puntero al sprite de la lista de sprites que representa a la bola.
+            Sprite       * right_player;                        ///< Puntero al sprite de la lista de sprites que representa al jugador derecho.*/
+
 
             bool           follow_target;                       ///< true si el usuario está tocando la pantalla y su player ir hacia donde toca.
             float          user_target_y;                       ///< Coordenada Y hacia donde debe ir el player del usuario cuando este toca la pantalla.
@@ -185,20 +195,14 @@
              */
             void run_simulation (float time);
 
-            /**
-             * Controla el player izquierdo usando una inteligencia artificial muy básica.
-             */
-            void update_ai ();
+
 
             /**
              * Hace que el player derecho se mueva hacia el punto de la pantalla que toca el usuario.
              */
             void update_user ();
 
-            /**
-             * Comprueba las colisiones de la bola con el escenario y con los players.
-             */
-            void check_ball_collisions ();
+
 
             /**
              * Dibuja la textura con el mensaje de carga mientras el estado de la escena es LOADING.

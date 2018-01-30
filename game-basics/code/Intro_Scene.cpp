@@ -97,7 +97,7 @@ namespace example
         {
             // Se carga la textura del logo:
 
-            logo_texture = Texture_2D::create (0, context, "logo.png");
+            logo_texture = Texture_2D::create (0, context, "intro_image.png");
 
             // Se comprueba si la textura se ha podido cargar correctamente:
 

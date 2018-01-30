@@ -14,12 +14,13 @@
         android:hasCode="false"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
-        android:roundIcon="@mipmap/ic_launcher_round" >
+        android:roundIcon="@mipmap/ic_launcher_round"
+        android:testOnly="true" >
         <activity
             android:name="android.app.NativeActivity"
             android:configChanges="keyboardHidden|keyboard|orientation|screenSize|locale"
             android:label="@string/app_name"
-            android:screenOrientation="landscape"
+            android:screenOrientation="portrait"
             android:theme="@style/ActivityTheme" >
             <meta-data
                 android:name="android.app.lib_name"

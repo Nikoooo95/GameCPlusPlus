@@ -26,10 +26,18 @@ namespace example
     Game_Scene::Texture_Data Game_Scene::textures_data[] =
     {
         { ID(loading),    "game-scene/loading.png"        },
-        { ID(hbar),       "game-scene/horizontal-bar.png" },
-        { ID(vbar),       "game-scene/vertical-bar.png"   },
-        { ID(player-bar), "game-scene/players-bar.png"    },
-        { ID(ball),       "game-scene/ball.png"           },
+        { ID(arrowL),       "game-scene/arrow_left.png" },
+        { ID(arrowR),       "game-scene/arrow_right.png" },
+        { ID(background),       "game-scene/background.png" },
+        { ID(character),       "game-scene/character.png" },
+        { ID(down),       "game-scene/down.png" },
+        { ID(pauseB),       "game-scene/pause_button.png" },
+        { ID(platform),       "game-scene/platform.png" },
+        { ID(top),       "game-scene/top.png" },
+
+
+
+
     };
 
     // Pâra determinar el número de items en el array textures_data, se divide el tamaño en bytes
@@ -40,8 +48,8 @@ namespace example
     // ---------------------------------------------------------------------------------------------
     // Definiciones de los atributos estáticos de la clase:
 
-    constexpr float Game_Scene::  ball_speed;
-    constexpr float Game_Scene::player_speed;
+    /*constexpr float Game_Scene::  ball_speed;
+    constexpr float Game_Scene::player_speed;*/
 
     // ---------------------------------------------------------------------------------------------
 
@@ -51,8 +59,8 @@ namespace example
         // En este caso no se hace ajuste de aspect ratio, por lo que puede haber distorsión cuando
         // el aspect ratio real de la pantalla del dispositivo es distinto.
 
-        canvas_width  = 1280;
-        canvas_height =  720;
+        canvas_width  = 720;
+        canvas_height =  1280;
 
         // Se inicia la semilla del generador de números aleatorios:
 
@@ -212,7 +220,19 @@ namespace example
     {
         // Se crean y configuran los sprites del fondo:
 
-        Sprite_Handle    top_bar(new Sprite( textures[ID(hbar)].get () ));
+        Sprite_Handle background(new Sprite(textures[ID(background)].get()));
+        background->set_anchor(CENTER);
+        background->set_position({canvas_width/2.f, canvas_height/2.f});
+
+        Sprite_Handle top(new Sprite(textures[ID(top)].get()));
+        top->set_anchor(TOP | LEFT);
+        top->set_position({0, canvas_height});
+
+        Sprite_Handle down(new Sprite(textures[ID(down)].get()));
+        down->set_anchor(BOTTOM | LEFT);
+        down->set_position({0, 0});
+
+        /*Sprite_Handle    top_bar(new Sprite( textures[ID(hbar)].get () ));
         Sprite_Handle middle_bar(new Sprite( textures[ID(vbar)].get () ));
         Sprite_Handle bottom_bar(new Sprite( textures[ID(hbar)].get () ));
 
@@ -221,29 +241,29 @@ namespace example
         middle_bar->set_anchor   (CENTER);
         middle_bar->set_position ({ canvas_width / 2.f, canvas_height / 2.f });
         bottom_bar->set_anchor   (BOTTOM | LEFT);
-        bottom_bar->set_position ({ 0, 0 });
+        bottom_bar->set_position ({ 0, 0 });*/
 
-        sprites.push_back (   top_bar);
+        sprites.push_back(background);
+        sprites.push_back(top);
+        sprites.push_back(down);
+        /*sprites.push_back (   top_bar);
         sprites.push_back (middle_bar);
-        sprites.push_back (bottom_bar);
+        sprites.push_back (bottom_bar);*/
 
         // Se crean los players y la bola:
 
-        Sprite_Handle  left_player_handle(new Sprite( textures[ID(player-bar)].get () ));
+        /*Sprite_Handle  left_player_handle(new Sprite( textures[ID(player-bar)].get () ));
         Sprite_Handle right_player_handle(new Sprite( textures[ID(player-bar)].get () ));
         Sprite_Handle         ball_handle(new Sprite( textures[ID(ball)      ].get () ));
 
         sprites.push_back ( left_player_handle);
         sprites.push_back (right_player_handle);
-        sprites.push_back (        ball_handle);
+        sprites.push_back (        ball_handle);*/
 
         // Se guardan punteros a los sprites que se van a usar frecuentemente:
 
-        top_border    =             top_bar.get ();
-        bottom_border =          bottom_bar.get ();
-        left_player   =  left_player_handle.get ();
-        right_player  = right_player_handle.get ();
-        ball          =         ball_handle.get ();
+        top_border    =             top.get();
+        down_border =          down.get ();
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -252,12 +272,12 @@ namespace example
 
     void Game_Scene::restart_game()
     {
-         left_player->set_position ({ left_player->get_width () * 3.f, canvas_height / 2.f });
-         left_player->set_speed_y  (0.f);
-        right_player->set_position ({ canvas_width  - right_player->get_width () * 3.f, canvas_height / 2.f });
-        right_player->set_speed_y  (0.f);
-                ball->set_position ({ canvas_width / 2.f, canvas_height / 2.f });
-                ball->set_speed    ({ 0.f, 0.f });
+         //left_player->set_position ({ left_player->get_width () * 3.f, canvas_height / 2.f });
+         //left_player->set_speed_y  (0.f);
+        //right_player->set_position ({ canvas_width  - right_player->get_width () * 3.f, canvas_height / 2.f });
+        //right_player->set_speed_y  (0.f);
+          //      ball->set_position ({ canvas_width / 2.f, canvas_height / 2.f });
+            //    ball->set_speed    ({ 0.f, 0.f });
 
         follow_target = false;
 
@@ -279,7 +299,7 @@ namespace example
         // Se hace unitario el vector y se multiplica un el valor de velocidad para que el vector
         // resultante tenga exactamente esa longitud:
 
-        ball->set_speed (random_direction.normalized () * ball_speed);
+        //ball->set_speed (random_direction.normalized () * ball_speed);
 
         gameplay = PLAYING;
     }
@@ -295,63 +315,19 @@ namespace example
             sprite->update (time);
         }
 
-        update_ai   ();
+
         update_user ();
 
         // Se comprueban las posibles colisiones de la bola con los bordes y con los players:
 
-        check_ball_collisions ();
+
     }
 
     // ---------------------------------------------------------------------------------------------
     // Usando un algoritmo sencillo se controla automáticamente el comportamiento del jugador
     // izquierdo.
 
-    void Game_Scene::update_ai ()
-    {
-        if (left_player->intersects (*top_border))
-        {
-            // El player izquierdo ha tocado el borde superior, por lo que se debe quedar quieto:
 
-            left_player->set_position_y (top_border->get_bottom_y () - left_player->get_height () / 2.f);
-            left_player->set_speed_y (0.f);
-        }
-        else
-        if (left_player->intersects (*bottom_border))
-        {
-            // El player izquierdo ha tocado el borde inferior, por lo que se debe quedar quieto:
-
-            left_player->set_position_y (bottom_border->get_top_y () + left_player->get_height () / 2.f);
-            left_player->set_speed_y (0.f);
-        }
-        else
-        {
-            // Se determina si la bola está por encima o por debajo del centro del player izquierdo
-            // para establecer si debe subir o bajar:
-
-            float delta_y = ball->get_position_y () - left_player->get_position_y ();
-
-            if (ball->get_speed_y () < 0.f)
-            {
-                if (delta_y < 0.f)
-                {
-                    left_player->set_speed_y (-player_speed * (ball->get_speed_x () < 0.f ? 1.f : .5f));
-                }
-                else
-                    left_player->set_speed_y (0.f);
-            }
-            else
-            if (ball->get_speed_y () > 0.f)
-            {
-                if (delta_y > 0.f)
-                {
-                    left_player->set_speed_y (+player_speed * (ball->get_speed_x () < 0.f ? 1.f : .5f));
-                }
-                else
-                    left_player->set_speed_y (0.f);
-            }
-        }
-    }
 
     // ---------------------------------------------------------------------------------------------
     // Se hace que el player dechero se mueva hacia arriba o hacia abajo según el usuario esté
@@ -360,89 +336,11 @@ namespace example
 
     void Game_Scene::update_user ()
     {
-        if (right_player->intersects (*top_border))
-        {
-            // Si el player está tocando el borde superior, no puede ascender:
 
-            right_player->set_position_y (top_border->get_bottom_y () - right_player->get_height () / 2.f);
-            right_player->set_speed_y (0);
-        }
-        else
-        if (right_player->intersects (*bottom_border))
-        {
-            // Si el player está tocando el borde inferior, no puede descender:
-
-            right_player->set_position_y (bottom_border->get_top_y () + right_player->get_height () / 2.f);
-            right_player->set_speed_y (0);
-        }
-        else
-        if (follow_target)
-        {
-            // Si el usuario está tocando la pantalla, se determina si está tocando por encima o por
-            // debajo de su centro para establecer si tiene que subir o bajar:
-
-            float delta_y = user_target_y - right_player->get_position_y ();
-
-            if (delta_y < 0.f) right_player->set_speed_y (-player_speed); else
-            if (delta_y > 0.f) right_player->set_speed_y (+player_speed);
-        }
-        else
-            right_player->set_speed_y (0);
     }
 
     // ---------------------------------------------------------------------------------------------
 
-    void Game_Scene::check_ball_collisions ()
-    {
-        // Se comprueba si la bola choca con el borde superior o con el inferior, en cuyo caso se
-        // ajusta su posición para que no lo atraviese y se invierte su velocidad en el eje Y:
-
-        if (ball->intersects (*top_border))
-        {
-            ball->set_position_y (top_border->get_bottom_y () - ball->get_height() / 2.f);
-            ball->set_speed_y    (-ball->get_speed_y ());
-        }
-
-        if (ball->intersects (*bottom_border))
-        {
-            ball->set_position_y (bottom_border->get_top_y () + ball->get_height() / 2.f);
-            ball->set_speed_y    (-ball->get_speed_y ());
-        }
-
-        // Solo si la bola no ha superado alguno de los players, se comprueba si choca con alguno
-        // de ellos, en cuyo caso se ajusta su posición para que no los atraviese y se invierte su
-        // velocidad en el eje X:
-
-        if (gameplay != BALL_LEAVING)
-        {
-            if (ball->get_left_x () < left_player->get_right_x ())
-            {
-                if (ball->get_bottom_y () < left_player->get_top_y () && ball->get_top_y () > left_player->get_bottom_y ())
-                {
-                    ball->set_position_x (left_player->get_right_x () + ball->get_width() / 2.f);
-                    ball->set_speed_x    (-ball->get_speed_x ());
-                }
-                else
-                    gameplay = BALL_LEAVING;
-            }
-
-            if (ball->get_right_x () > right_player->get_left_x ())
-            {
-                if (ball->get_bottom_y () < right_player->get_top_y () && ball->get_top_y () > right_player->get_bottom_y ())
-                {
-                    ball->set_position_x (right_player->get_left_x () - ball->get_width() / 2.f);
-                    ball->set_speed_x    (-ball->get_speed_x ());
-                }
-                else
-                    gameplay = BALL_LEAVING;
-            }
-        }
-        else
-        if (ball->get_right_x () < 0.f || ball->get_left_x () > float(canvas_width))
-        {
-            restart_game ();
-        }
-    }
 
     // ---------------------------------------------------------------------------------------------
 

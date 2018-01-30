@@ -67,8 +67,8 @@
             {
                 state         = UNINITIALIZED;
                 suspended     = true;
-                canvas_width  = 1280;
-                canvas_height =  720;
+                canvas_width  = 720;
+                canvas_height =  1280;
             }
 
             /**
