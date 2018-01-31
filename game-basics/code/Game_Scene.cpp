@@ -221,17 +221,31 @@ namespace example
         // Se crean y configuran los sprites del fondo:
 
         Sprite_Handle background(new Sprite(textures[ID(background)].get()));
+        Sprite_Handle top(new Sprite(textures[ID(top)].get()));
+        Sprite_Handle down(new Sprite(textures[ID(down)].get()));
+        Sprite_Handle right_arrow(new Sprite(textures[ID(arrowR)].get()));
+        Sprite_Handle left_arrow(new Sprite(textures[ID(arrowL)].get()));
+        Sprite_Handle pause(new Sprite(textures[ID(pauseB)].get()));
+
         background->set_anchor(CENTER);
         background->set_position({canvas_width/2.f, canvas_height/2.f});
-
-        Sprite_Handle top(new Sprite(textures[ID(top)].get()));
         top->set_anchor(TOP | LEFT);
         top->set_position({0, canvas_height});
-
-        Sprite_Handle down(new Sprite(textures[ID(down)].get()));
         down->set_anchor(BOTTOM | LEFT);
         down->set_position({0, 0});
+        right_arrow->set_anchor(BOTTOM | RIGHT);
+        right_arrow->set_position({canvas_width-right_arrow->get_width(), right_arrow->get_height()/4});
+        left_arrow->set_anchor(BOTTOM | LEFT);
+        left_arrow->set_position({left_arrow->get_width(), left_arrow->get_height()/4});
+        pause->set_anchor(TOP | LEFT);
+        pause->set_position({canvas_width - pause->get_width()*1.5, canvas_height-pause->get_height()/10});
 
+        sprites.push_back(background);
+        sprites.push_back(top);
+        sprites.push_back(down);
+        sprites.push_back(right_arrow);
+        sprites.push_back(left_arrow);
+        sprites.push_back(pause);
         /*Sprite_Handle    top_bar(new Sprite( textures[ID(hbar)].get () ));
         Sprite_Handle middle_bar(new Sprite( textures[ID(vbar)].get () ));
         Sprite_Handle bottom_bar(new Sprite( textures[ID(hbar)].get () ));
@@ -242,10 +256,6 @@ namespace example
         middle_bar->set_position ({ canvas_width / 2.f, canvas_height / 2.f });
         bottom_bar->set_anchor   (BOTTOM | LEFT);
         bottom_bar->set_position ({ 0, 0 });*/
-
-        sprites.push_back(background);
-        sprites.push_back(top);
-        sprites.push_back(down);
         /*sprites.push_back (   top_bar);
         sprites.push_back (middle_bar);
         sprites.push_back (bottom_bar);*/
