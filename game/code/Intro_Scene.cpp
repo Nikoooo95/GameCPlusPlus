@@ -10,7 +10,6 @@
 
 #include "Intro_Scene.hpp"
 #include "Game_Scene.hpp"
-
 #include <basics/Canvas>
 #include <basics/Director>
 
