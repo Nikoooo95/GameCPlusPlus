@@ -39,6 +39,7 @@
                 CREDITS
             };
 
+
             struct Option{
                 const Atlas::Slice * slice;
                 Point2f position;
@@ -70,8 +71,6 @@
                 return {canvasWidth, canvasHeight};
             };
 
-            bool initialize() override;
-
             void suspend() override{
                 suspended = true;
             }
@@ -80,7 +79,9 @@
                 suspended = false;
             }
 
-            void handle(basics::Event & event) override;
+            bool initialize() override;
+
+           void handle(basics::Event & event) override;
 
             void update (float time) override;
 

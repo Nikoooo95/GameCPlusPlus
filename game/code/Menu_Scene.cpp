@@ -13,8 +13,10 @@
 
 #include <basics/Director>
 #include <basics/Canvas>
+#include <basics/Transformation>
 
 using namespace basics;
+using namespace std;
 
 
 namespace example
@@ -27,10 +29,13 @@ namespace example
         canvasHeight = 1280;
     }
 
-    bool Menu_Scene::initialize() {
-        for(auto & option : options){
+    bool Menu_Scene::initialize ()
+    {
+        for (auto & option : options)
+        {
             option.isPressed = false;
         }
+
         return true;
     }
 
@@ -59,6 +64,7 @@ namespace example
             }
         }
     }
+
 
     int Menu_Scene::optionAt(const Point2f & point){
         for(size_t index = 0; index < nOptions; ++index){
@@ -122,6 +128,66 @@ namespace example
                 }
             }
         }
+    }
+
+    void Menu_Scene::update (float time)
+    {
+        if (!suspended) if (state == LOADING)
+            {
+                Graphics_Context::Accessor context = director.lock_graphics_context ();
+
+                if (context)
+                {
+                    // Se carga el atlas:
+
+                    atlas.reset (new Atlas("main-menu.sprites", context));
+
+                    // Si el atlas se ha podido cargar el estado es READY y, en otro caso, es ERROR:
+
+                    state = atlas->good () ? READY : ERROR;
+
+                    // Si el atlas está disponible, se inicializan los datos de las opciones del menú:
+
+                    if (state == READY)
+                    {
+                        configureOptions ();
+                    }
+                }
+            }
+    }
+
+    void Menu_Scene::configureOptions ()
+    {
+        // Se asigna un slice del atlas a cada opción del menú según su ID:
+
+        options[PLAY   ].slice = atlas->get_slice (ID(play)   );
+        //options[SCORES ].slice = atlas->get_slice (ID(scores) );
+        options[HELP   ].slice = atlas->get_slice (ID(help)   );
+        options[CREDITS].slice = atlas->get_slice (ID(credits));
+
+        // Se calcula la altura total del menú:
+
+        float menu_height = 0;
+
+        for (auto & option : options) menu_height += option.slice->height;
+
+        // Se calcula la posición del borde superior del menú en su conjunto de modo que
+        // quede centrado verticalmente:
+
+        float option_top = canvasHeight / 2.f + menu_height / 2.f;
+
+        // Se establece la posición del borde superior de cada opción:
+
+        for (unsigned index = 0; index < nOptions; ++index)
+        {
+            options[index].position = Point2f{ canvasWidth / 2.f, option_top };
+
+            option_top -= options[index].slice->height;
+        }
+
+        // Se restablece la presión de cada opción:
+
+        initialize ();
     }
 
 
