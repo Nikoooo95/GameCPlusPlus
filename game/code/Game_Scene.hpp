@@ -47,15 +47,19 @@
                 ERROR
             };
 
-            enum spritesID{
+            enum buttonsID{
                 RIGHT,
                 LEFT,
                 PAUSE,
+            };
+
+            enum spritesID{
                 BACKGROUND,
-                DOWN,
-                LOAD,
                 PLATFORM,
+                CHARACTER,
+                DOWN,
                 TOP
+
 
             };
 
@@ -70,7 +74,6 @@
 
 
         public :
-            Sprite * sprites[];
 
             Texture_Map    textures;                            ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas
 
@@ -82,21 +85,27 @@
                 bool isPressed;
             };
 
-            struct Ball{
-                const Sprite * sprite;
-                int x, y;
+            static const unsigned nButtons = 3;
+            static const unsigned nSprites = 5;
+
+
+
+            Button buttons[nButtons];
+
+            class Element{
+            public:
+                const Atlas::Slice * slice;
+                Point2f position;
+
+            public:
+                bool intersects (Element & other){
+                    if(this->position[1] + other.slice->height < other.position[1] || this->position[1] > other.position[1]+other.slice->height) return false;
+                    if(this->position[0] + other.slice->height < other.position[0] || this->position[0] > other.position[0]+other.slice->height) return false;
+                    return false;
+                }
             };
 
-            static const unsigned nOptions = 3;
-
-            Button * arrow_left;
-            Button * arrow_right;
-            Button * pause_button;
-
-            Button buttons[nOptions];
-
-            Ball ball;
-
+            Element sprites[nSprites];
 
 
         public:
@@ -134,6 +143,7 @@
             void render_loading (Canvas & canvas);
 
             void render_playfield (Canvas & canvas);
+
 
         };
     }
