@@ -64,7 +64,7 @@ namespace example {
 
     void Game_Scene::update (float time) {
         if (!suspended) switch (state) {
-            case LOADING: break;
+            case LOADING: load_textures(); break;
             case RUNNING: run_simulation (time); break;
             case ERROR:   break;
         }
@@ -86,6 +86,8 @@ namespace example {
                 }
             }
         }
+
+
     }
 
     void Game_Scene::load_textures () {
@@ -101,16 +103,17 @@ namespace example {
             create_sprites ();                          // la carga antes de pasar al juego para que
            load_textures();
         }
+
     }
 
     void Game_Scene::create_sprites () {
-        buttons[LEFT].slice     =   atlas->get_slice(ID(character));
+        buttons[LEFT].slice     =   atlas->get_slice(ID(left));
         buttons[RIGHT].slice    =   atlas->get_slice(ID(right));
         buttons[PAUSE].slice    =   atlas->get_slice(ID(pause));
 
-        buttons[LEFT].position = Point2f(buttons[LEFT].slice->width/2, buttons[LEFT].slice->width/2);
-        buttons[RIGHT].position = Point2f(canvas_width-buttons[LEFT].slice->width*1.5, buttons[LEFT].slice->width/2);
-        buttons[PAUSE].position = Point2f(300, 300);
+        buttons[LEFT].position  =   Point2f(buttons[LEFT].slice->width/2, buttons[LEFT].slice->width/2);
+        buttons[RIGHT].position =   Point2f(canvas_width-buttons[LEFT].slice->width*1.5, buttons[LEFT].slice->width/2);
+        buttons[PAUSE].position =   Point2f(300, 300);
 
         initialize();
     }

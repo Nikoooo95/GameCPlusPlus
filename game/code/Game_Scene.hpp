@@ -65,7 +65,12 @@
             bool           suspended;                           ///< true cuando la escena está en segundo plano y viceversa.
 
             unsigned       canvas_width;                        ///< Ancho de la resolución virtual usada para dibujar.
-            unsigned       canvas_height;                       ///< Alto  de la resolución virtual usada para dibujar.
+            unsigned       canvas_height;     ///< Alto  de la resolución virtual usada para dibujar.
+
+
+
+        public :
+            Sprite * sprites[];
 
             Texture_Map    textures;                            ///< Mapa  en el que se guardan shared_ptr a las texturas cargadas
 
@@ -74,7 +79,12 @@
             struct Button{
                 const Atlas::Slice * slice;
                 Point2f position;
-                float isPressed;
+                bool isPressed;
+            };
+
+            struct Ball{
+                const Sprite * sprite;
+                int x, y;
             };
 
             static const unsigned nOptions = 3;
@@ -84,6 +94,10 @@
             Button * pause_button;
 
             Button buttons[nOptions];
+
+            Ball ball;
+
+
 
         public:
 
