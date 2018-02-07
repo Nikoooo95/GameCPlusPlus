@@ -59,8 +59,6 @@
                 CHARACTER,
                 DOWN,
                 TOP
-
-
             };
 
         private:
@@ -87,7 +85,9 @@
 
             static const unsigned nButtons = 3;
             static const unsigned nSprites = 5;
+            static const unsigned nPlatforms = 10;
 
+            int speedY = 0;
 
 
             Button buttons[nButtons];
@@ -99,13 +99,40 @@
 
             public:
                 bool intersects (Element & other){
-                    if(this->position[1] + other.slice->height < other.position[1] || this->position[1] > other.position[1]+other.slice->height) return false;
+
+                    // Se determinan las coordenadas de la esquina inferior izquierda y de la superior derecha
+                    // de este sprite:
+
+                    float this_left    = this->position[0];
+                    float this_bottom  = this->position[1];
+                    float this_right   = this_left   + this->slice->width;
+                    float this_top     = this_bottom + this->slice->height;
+
+                    // Se determinan las coordenadas de la esquina inferior izquierda y de la superior derecha
+                    // del otro sprite:
+
+                    float other_left   = other.position[0];
+                    float other_bottom = other.position[1];
+                    float other_right  = other_left   + other.slice->width;
+                    float other_top    = other_bottom + other.slice->height;
+
+                    // Se determina si los rectángulos envolventes de ambos sprites se solapan:
+
+                    return !(other_left >= this_right || other_right <= this_left || other_bottom >= this_top || other_top <= this_bottom);
+
+                    /*if(this->position[1] + other.slice->height < other.position[1] || this->position[1] > other.position[1]+other.slice->height) return false;
                     if(this->position[0] + other.slice->height < other.position[0] || this->position[0] > other.position[0]+other.slice->height) return false;
-                    return false;
+                    return false;*/
+
+                    return  !(other.position[0] >= this->position[0]+this->slice->width ||
+                            other.position[0]+other.slice->width <= this->position[0] ||
+                            other.position[1] >= this->position[1]+this->slice->height ||
+                            other.position[1] + other.slice->height <= this->position[1]);
                 }
             };
 
             Element sprites[nSprites];
+            Element platforms[nPlatforms];
 
 
         public:
@@ -138,12 +165,15 @@
 
             void run_simulation (float time);
 
-            void update_user ();
+            void update_user (float time);
 
             void render_loading (Canvas & canvas);
 
             void render_playfield (Canvas & canvas);
 
+            void generate_platforms();
+
+            bool check_collisions();
 
         };
     }

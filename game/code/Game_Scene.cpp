@@ -24,7 +24,7 @@ namespace example {
         suspended = true;
         canvas_width  = 720;
         canvas_height =  1280;
-
+        speedY = 500.f;
 
         srand (unsigned(time(nullptr)));
         initialize ();
@@ -138,29 +138,38 @@ namespace example {
         sprites[DOWN].position          = Point2f(sprites[DOWN].slice->width, sprites[DOWN].slice->height);
         sprites[BACKGROUND].position    = Point2f(canvas_width, canvas_height);
         sprites[PLATFORM].position      = Point2f(300, 300);
-        sprites[CHARACTER].position     = Point2f(500, 500);
+        sprites[CHARACTER].position     = Point2f(500, 800);
 
-        buttons[LEFT].position      = Point2f(buttons[LEFT].slice->width, sprites[DOWN].slice->height/2);
-        buttons[RIGHT].position     = Point2f(canvas_width-buttons[RIGHT].slice->width, sprites[DOWN].slice->height/2);
-        buttons[PAUSE].position     = Point2f(canvas_width*2-buttons[RIGHT].slice->width*1.5f, canvas_height*2-buttons[PAUSE].slice->height*1.15f);
+        buttons[LEFT].position      = Point2f(buttons[LEFT].slice->width, buttons[LEFT].slice->height/1.5f);
+        buttons[RIGHT].position     = Point2f(canvas_width-buttons[RIGHT].slice->width, buttons[RIGHT].slice->height/1.5f);
+        buttons[PAUSE].position     = Point2f(canvas_width-buttons[RIGHT].slice->width, sprites[TOP].position[1]/2-sprites[TOP].slice->height*0.2);
 
         initialize();
+        generate_platforms();
     }
 
     void Game_Scene::run_simulation (float time) {
-        update_user ();
+        update_user (time);
     }
 
-    void Game_Scene::update_user () {
-       /* if(character.intersects(sprites[DOWN])){
-            //speed
-        }*/
+    void Game_Scene::update_user (float time) {
+        float gravity = -9.8f;
+
+
+        sprites[CHARACTER].position[1] += speedY*time + 0.5f*gravity*time*time;
+        speedY += gravity;
+        if(speedY<0){
+            if(check_collisions()){
+            speedY = 500.f;
+            }
+        }
+
         if(buttons[LEFT].isPressed){
-            sprites[CHARACTER].position[0] -= 20.f;
+            sprites[CHARACTER].position[0] -= 500.f * time;
 
         }
         if(buttons[RIGHT].isPressed)
-            sprites[CHARACTER].position[0] += 20.f;
+            sprites[CHARACTER].position[0] += 500.f * time;
     }
 
     void Game_Scene::render_playfield (Canvas & canvas) {
@@ -168,7 +177,7 @@ namespace example {
         if(state == RUNNING){
 
             for(auto & element : sprites){
-                if(element.slice){
+                if(element.slice && element.slice!=sprites[PLATFORM].slice && element.slice!=sprites[CHARACTER].slice){
                     canvas.fill_rectangle ({ element.position[0]*.5f, element.position[1]*.5f },
                                            { element.slice->width, element.slice->height },
                                            element.slice);
@@ -183,7 +192,18 @@ namespace example {
                                        button.slice);
             }
 
-            canvas.set_transform(Transformation2f());
+            for(auto & platform : platforms){
+                if(platform.position[1]<sprites[TOP].position[1]*.5f){
+                    canvas.fill_rectangle ({ platform.position[0], platform.position[1] },
+                                           { platform.slice->width, platform.slice->height },
+                                           platform.slice);
+                }
+
+            }
+            canvas.fill_rectangle ({ sprites[CHARACTER].position[0], sprites[CHARACTER].position[1] },
+                                   { sprites[CHARACTER].slice->width, sprites[CHARACTER].slice->height },
+                                   sprites[CHARACTER].slice);
+            //canvas.set_transform(Transformation2f());
         }
     }
 
@@ -197,6 +217,23 @@ namespace example {
                             slice
                     );
         }
+    }
+
+    void Game_Scene::generate_platforms() {
+        const Atlas::Slice * tempSlice = sprites[PLATFORM].slice;
+        int tempN =(int) canvas_height-sprites[DOWN].slice->height;
+        for(size_t index = 0; index<nPlatforms; ++index){
+            platforms[index].slice = tempSlice;
+            platforms[index].position[0] = 3 + rand()%(canvas_width - 3);
+            platforms[index].position[1] = sprites[DOWN].slice->height + rand()%(tempN);
+        }
+    }
+
+    bool Game_Scene::check_collisions() {
+        for(auto & platform : platforms){
+            if(sprites[CHARACTER].intersects(platform)) return true;
+        }
+        return false;
     }
 
 }
