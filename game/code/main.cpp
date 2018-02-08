@@ -14,6 +14,7 @@
 #include <basics/opengles/Context>
 #include <basics/Window>
 #include "Intro_Scene.hpp"
+#include "Menu_Scene.hpp"
 #include <basics/opengles/Canvas_ES2>
 #include <basics/opengles/OpenGL_ES2>
 
@@ -29,7 +30,7 @@ int main ()
 
     // Se crea una Game_Scene y se inicia mediante el Director:
 
-    director.run_scene (shared_ptr< Scene >(new Intro_Scene));
+    director.run_scene (shared_ptr< Scene >(new Menu_Scene));
 
     return 0;
 }
