@@ -105,9 +105,6 @@ namespace example {
             }
         }
 
-        if(state == OVER){
-            //TO-DO
-        }
 
         return -1;
     }

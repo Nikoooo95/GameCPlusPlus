@@ -25,40 +25,42 @@ namespace example
     Menu_Scene::Menu_Scene() {
         state = LOADING;
         suspended = true;
-        canvasWidth = 720;
-        canvasHeight = 1280;
+        canvas_width = 720;
+        canvas_height = 1280;
+        initialize();
     }
 
-    bool Menu_Scene::initialize ()
-    {
-        for (auto & option : options)
-        {
+    bool Menu_Scene::initialize () {
+        for (auto & option : options) {
             option.isPressed = false;
         }
-
         return true;
     }
 
     void Menu_Scene::handle (basics::Event & event){
-        if(state == READY){
+        if(state == RUNNING || state == HELPING){
             switch (event.id){
                 case ID(touch-started):
                 case ID(touch-moved):{
                     Point2f touchLocation = {*event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
                     int optionTouched = optionAt(touchLocation);
-                    for(size_t index = 0; index < nOptions; ++index){
-                        options[index].isPressed = index == optionTouched;
+                    if(state == RUNNING){
+                        for(size_t index = 0; index < nOptions-1; ++index){
+                            options[index].isPressed = index == optionTouched;
+                        }
                     }
+                    if(state == HELPING){
+                            options[BACK].isPressed = BACK == optionTouched;
+
+                    }
+
 
                     break;
                 }
 
                 case ID(touch_ended):{
                     for(auto & option : options) option.isPressed = false;
-                    Point2f touchLocation = {*event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
-                    if(optionAt(touchLocation) == PLAY){
-                        director.run_scene(std::shared_ptr< Scene >(new Game_Scene));
-                    }
+                   break;
                 }
 
             }
@@ -67,127 +69,161 @@ namespace example
 
 
     int Menu_Scene::optionAt(const Point2f & point){
-        for(size_t index = 0; index < nOptions; ++index){
-            const Option & option = options[index];
+        if(state == RUNNING){
+            for(size_t index = 0; index < nOptions-1; ++index){
+                const Option & option = options[index];
+                if(
+                        point[0] > option.position[0] - option.slice->width  &&
+                        point[0] < option.position[0] + option.slice->width  &&
+                        point[1] > option.position[1] - option.slice->height &&
+                        point[1] < option.position[1] + option.slice->height
+                        ){
+                    return index;
+                }
+            }
+
+            return -1;
+        }
+
+        if(state == HELPING){
+            const Option & option = options[BACK];
             if(
                     point[0] > option.position[0] - option.slice->width  &&
                     point[0] < option.position[0] + option.slice->width  &&
                     point[1] > option.position[1] - option.slice->height &&
                     point[1] < option.position[1] + option.slice->height
-            ){
-                return index;
+                    ){
+                return 3;
             }
+            return -1;
         }
+
 
         return -1;
     }
 
-    void Menu_Scene::render (Graphics_Context::Accessor & context)
-    {
-        if (!suspended)
-        {
-            // El canvas se puede haber creado previamente, en cuyo caso solo hay que pedirlo:
+    void Menu_Scene::render (Graphics_Context::Accessor & context) {
+       if(!suspended){
+           Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
+           if (!canvas) {
+               canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
+           }
 
-            Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
+           if (canvas) {
+               canvas->clear ();
+               switch (state) {
+                   case LOADING: break;
+                   case RUNNING: render_menu (*canvas); break;
+                   case HELPING: render_help (*canvas); break;
+                   case ERROR:   break;
+               }
+           }
+       }
+    }
 
-            // Si no se ha creado previamente, hay que crearlo una vez:
-
-            if (!canvas)
-            {
-                canvas = Canvas::create (ID(canvas), context, {{ canvasWidth, canvasHeight }});
+    void Menu_Scene::update (float time) {
+        if (!suspended) switch (state) {
+                case LOADING:    load_textures();                   break;
+                case RUNNING:
+                case HELPING: run_simulation();
+                case ERROR:                         break;
             }
+    }
 
-            // Si el canvas se ha podido obtener o crear, se puede dibujar con él:
-
-            if (canvas)
-            {
-                canvas->clear ();
-
-                if (state == READY)
-                {
-                    // Se dibuja el slice de cada una de las opciones del menú:
-
-                    for (auto & option : options)
-                    {
-                        canvas->set_transform
-                                (
-                                        scale_then_translate_2d
-                                                (
-                                                        option.isPressed ? 0.75f : 1.f,              // Escala de la opción
-                                                        { option.position[0], option.position[1] }      // Traslación
-                                                )
-                                );
-
-                        canvas->fill_rectangle ({ 0.f, 0.f }, { option.slice->width, option.slice->height }, option.slice, CENTER | TOP);
-                    }
-
-                    // Se restablece la transformación aplicada a las opciones para que no afecte a
-                    // dibujos posteriores realizados con el mismo canvas:
-
-                    canvas->set_transform (Transformation2f());
+    void Menu_Scene::load_textures() {
+        if(state == LOADING){
+            Graphics_Context::Accessor context = director.lock_graphics_context();
+            if (context) {
+                atlas.reset(new Atlas("menu-scene/menu.sprites", context));
+                state = atlas->good() ? RUNNING : ERROR;
+                if(state == RUNNING){
+                    create_sprites();
                 }
             }
         }
     }
 
-    void Menu_Scene::update (float time)
-    {
-        if (!suspended) if (state == LOADING)
-            {
-                Graphics_Context::Accessor context = director.lock_graphics_context ();
+    void Menu_Scene::create_sprites() {
+        sprites[TITLE].slice   = atlas->get_slice(ID(title));
+        sprites[BACKGROUND].slice   = atlas->get_slice(ID(background));
+        sprites[TEXT_HELP].slice   = atlas->get_slice(ID(text_help));
 
-                if (context)
-                {
-                    // Se carga el atlas:
+        options[PLAY].slice = atlas->get_slice(ID(play));
+        options[HELP].slice = atlas->get_slice(ID(help));
+        options[EXIT].slice = atlas->get_slice(ID(exit));
+        options[BACK].slice = atlas->get_slice(ID(back));
 
-                    atlas.reset (new Atlas("main-menu.sprites", context));
+        sprites[TITLE].position = Point2f(canvas_width/2, canvas_height-sprites[TITLE].slice->height*2.f);
+        sprites[BACKGROUND].position = Point2f(canvas_width/2, canvas_height/2);
+        sprites[TEXT_HELP].position = Point2f(canvas_width/2, canvas_height/2);
 
-                    // Si el atlas se ha podido cargar el estado es READY y, en otro caso, es ERROR:
+        options[PLAY].position = Point2f(canvas_width/2, canvas_height/2);
+        options[HELP].position = Point2f(canvas_width/2, options[PLAY].position[1]-options[HELP].slice->height*2);
+        options[EXIT].position = Point2f(canvas_width/2, options[HELP].position[1]-options[EXIT].slice->height*2);
+        options[BACK].position = Point2f(canvas_width/2, options[BACK].slice->height*3);
 
-                    state = atlas->good () ? READY : ERROR;
 
-                    // Si el atlas está disponible, se inicializan los datos de las opciones del menú:
-
-                    if (state == READY)
-                    {
-                        configureOptions ();
-                    }
-                }
-            }
+        //initialize();
     }
 
-    void Menu_Scene::configureOptions ()
-    {
-        // Se asigna un slice del atlas a cada opción del menú según su ID:
+    void Menu_Scene::run_simulation() {
+       if(state == RUNNING) {
+           update_menu();
+       }else if(state == HELPING) {
+           update_helping();
+       }
+    }
 
-        options[PLAY   ].slice = atlas->get_slice (ID(play)   );
-        //options[SCORES ].slice = atlas->get_slice (ID(scores) );
-        options[HELP   ].slice = atlas->get_slice (ID(help)   );
-        options[CREDITS].slice = atlas->get_slice (ID(credits));
-
-        // Se calcula la altura total del menú:
-
-        float menu_height = 0;
-
-        for (auto & option : options) menu_height += option.slice->height;
-
-        // Se calcula la posición del borde superior del menú en su conjunto de modo que
-        // quede centrado verticalmente:
-
-        float option_top = canvasHeight / 2.f + menu_height / 2.f;
-
-        // Se establece la posición del borde superior de cada opción:
-
-        for (unsigned index = 0; index < nOptions; ++index)
-        {
-            options[index].position = Point2f{ canvasWidth / 2.f, option_top };
-
-            option_top -= options[index].slice->height;
+    void Menu_Scene::update_helping() {
+        if(options[BACK].isPressed){
+            state = RUNNING;
         }
+    }
 
-        // Se restablece la presión de cada opción:
+    void Menu_Scene::update_menu() {
+        if(state == RUNNING){
+            if(options[PLAY].isPressed){
+                director.run_scene(std::shared_ptr< Scene >(new Game_Scene));
+            }
+            if(options[HELP].isPressed){
+                state = HELPING;
+            }
+            if(options[EXIT].isPressed){
+                //TO-DO
+            }
+        }
+    }
 
-        initialize ();
+    void Menu_Scene::render_menu(Canvas &canvas) {
+        canvas.clear();
+        if(state == RUNNING){
+            for(auto & element :  sprites){
+                if(element.slice != sprites[TEXT_HELP].slice){
+                    canvas.fill_rectangle ({ element.position[0], element.position[1] },
+                                           { element.slice->width, element.slice->height },
+                                           element.slice);
+                }
+            }
+            for(auto & button : options){
+                if(button.slice != options[BACK].slice){
+                    canvas.fill_rectangle ({ button.position[0], button.position[1] },
+                                           { button.slice->width, button.slice->height },
+                                           button.slice);
+                }
+            }
+        }
+    }
+
+    void Menu_Scene::render_help(Canvas &canvas) {
+        canvas.clear();
+        if(state == HELPING){
+            canvas.fill_rectangle ({ sprites[TEXT_HELP].position[0], sprites[TEXT_HELP].position[1] },
+                                   { sprites[TEXT_HELP].slice->width, sprites[TEXT_HELP].slice->height },
+                                   sprites[TEXT_HELP].slice);
+            canvas.fill_rectangle ({ options[BACK].position[0], options[BACK].position[1] },
+                                   { options[BACK].slice->width, options[BACK].slice->height },
+                                   options[BACK].slice);
+        }
     }
 
 

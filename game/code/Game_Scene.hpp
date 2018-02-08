@@ -11,10 +11,7 @@
 #ifndef GAME_SCENE_HEADER
 #define GAME_SCENE_HEADER
 
-    #include <map>
-    #include <list>
     #include <memory>
-
     #include <basics/Canvas>
     #include <basics/Scene>
     #include <basics/Atlas>
