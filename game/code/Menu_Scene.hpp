@@ -1,12 +1,13 @@
 /*
- * INTRO SCENE
- * Copyright © 2018+ Ángel Rodríguez Ballesteros
+ * MENU SCENE
+ * Copyright © 2018+ Nicolás Tapia Sanz
  *
  * Distributed under the Boost Software License, version  1.0
  * See documents/LICENSE.TXT or www.boost.org/LICENSE_1_0.txt
  *
- * angel.rodriguez@esne.edu
+ * nic.tap95@gmail.com
  */
+
 
 #ifndef MENU_SCENE_HEADER
 #define MENU_SCENE_HEADER
@@ -107,8 +108,6 @@ namespace example {
             void load_textures();
 
             void create_sprites();
-
-            void run_simulation ();
 
             void update_helping();
 
