@@ -38,27 +38,36 @@ namespace basics
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+
     Atlas::Atlas(const Texture_Handle & texture)
     :
         texture(texture)
     {
     }
 
-    bool Atlas::add_slice (Id id, const Point2f & position, const Size2f & size)
+    // ---------------------------------------------------------------------------------------------
+
+    Atlas::Slice * Atlas::add_slice (Id id, const Point2f & position, const Size2f & size)
     {
         if (slices.count (id) == 0)
         {
-            slices[id] =
-            {
-                this,
-                position.coordinates.x (), position.coordinates.x () + size.width,
-                position.coordinates.y (), position.coordinates.y () + size.height,
-                size.width,                size.height
-            };
+            return &
+            (
+                slices[id] =
+                {
+                    this,
+                    position.coordinates.x (), position.coordinates.x () + size.width,
+                    position.coordinates.y (), position.coordinates.y () + size.height,
+                    size.width,                size.height
+                }
+            );
         };
 
-        return false;
+        return nullptr;
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     void Atlas::parse (Buffer & slices_data, const std::string & path, Graphics_Context::Accessor & context)
     {
@@ -82,6 +91,8 @@ namespace basics
             parse_img (img_tag, path, context);
         }
     }
+
+    // ---------------------------------------------------------------------------------------------
 
     void Atlas::parse_img (rapidxml::xml_node<> * img_tag, const std::string & path, Graphics_Context::Accessor & context)
     {
@@ -147,6 +158,8 @@ namespace basics
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+
     void Atlas::parse_dir (rapidxml::xml_node<> * dir_tag, const string & prefix)
     {
         for (xml_node<> * child = dir_tag->first_node (); child; child = child->next_sibling ())
@@ -185,6 +198,8 @@ namespace basics
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+
     void Atlas::parse_spr (rapidxml::xml_node<> * spr_tag, const std::string & id)
     {
         // Se extraen todos los atributos básicos:
@@ -201,9 +216,9 @@ namespace basics
             float w = std::atoi (w_attribute->value ());
             float h = std::atoi (h_attribute->value ());
 
-            assert(w && h);
+            Slice * slice = add_slice (fnv32 (id), { x, y }, { w, h });
 
-            add_slice (fnv32 (id), { x, y }, { w, h });
+            assert (slice && w && h);
         }
     }
 

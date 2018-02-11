@@ -74,8 +74,8 @@ namespace example {
                 float isPressed;
             };
 
-            static const unsigned nOptions = 4; //Numero de botones
-            static const unsigned nSprites = 3; //Numero de sprites simples
+            static const unsigned nOptions = 4;     ///< Numero de botones
+            static const unsigned nSprites = 3;     ///< Numero de sprites simples
 
         private:
 
@@ -88,9 +88,7 @@ namespace example {
             Option options[nOptions];               ///< Array de botones que se mostrarán en el menú.
             Element sprites[nSprites];              ///< Array de Sprites simples
 
-            //typedef basics::Graphics_Context::Accessor Context;
             std::unique_ptr< Atlas > atlas;         ///< Atlas de sprites
-
 
         public:
 
@@ -176,4 +174,5 @@ namespace example {
             void render_helping(Canvas & canvas);
         };
 }
+
 #endif

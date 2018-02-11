@@ -29,13 +29,23 @@
         protected:
 
             std::string name;
+            bool        ready;
 
         public:
 
-            Font() = default;
+            Font()
+            {
+                ready = false;
+            }
+
             virtual ~Font() = default;
 
         public:
+
+            bool good () const
+            {
+                return ready;
+            }
 
             const std::string & get_name () const
             {

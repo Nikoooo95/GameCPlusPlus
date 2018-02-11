@@ -15,6 +15,8 @@
 #if defined(BASICS_ANDROID_OS)
 
     #include "Android_Application.hpp"
+    #include "Android_Sensor_Manager.hpp"
+    #include "Android_Accelerometer.hpp"
     #include "Native_Activity.hpp"
 
     #include <basics/Log>
@@ -34,6 +36,46 @@
         void android_input_dispatcher (AInputQueue * input_queue);
 
         Native_Activity * native_activity = nullptr;
+
+        // -----------------------------------------------------------------------------------------
+
+        Native_Activity::~Native_Activity()
+        {
+            if (sensor_thread.instance &&
+                sensor_thread.instance->joinable ()) sensor_thread.instance->join ();
+            if ( input_thread.instance->joinable ())  input_thread.instance->join ();
+            if (  main_thread.instance->joinable ())   main_thread.instance->join ();
+
+            android_sensor_manager.shut_down ();
+        }
+
+        // -----------------------------------------------------------------------------------------
+
+        bool Native_Activity::start_sensor_thread ()
+        {
+            if (!sensor_thread.ready)
+            {
+                // Start the sensor thread and wait for it to be ready:
+
+                sensor_thread.ready   = false;
+                sensor_thread.started = false;
+
+                sensor_thread.instance.reset
+                (
+                    new thread(&Native_Activity::sensor_thread_function, this)
+                );
+
+                while (!sensor_thread.started)
+                {
+                    unique_lock< mutex > sync (sensor_thread.mutex);
+                    sensor_thread.barrier.wait (sync);
+                }
+            }
+
+            return sensor_thread.ready;
+        }
+
+        // -----------------------------------------------------------------------------------------
 
         void Native_Activity::main_thread_function ()
         {
@@ -70,6 +112,71 @@
 
         // -----------------------------------------------------------------------------------------
 
+        void Native_Activity::sensor_thread_function ()
+        {
+            // Creates a looper for the sensor thread:
+
+            ASensorEventQueue * sensor_queue = android_sensor_manager.create_event_queue
+            (
+                sensor_thread.looper = ALooper_prepare (ALOOPER_PREPARE_ALLOW_NON_CALLBACKS)
+            );
+
+            sensor_thread.ready   = sensor_queue != nullptr;
+            sensor_thread.started = true;
+
+            // And then notifies the onCreate() callback that the sensor thread is up and ready:
+
+            sensor_thread.barrier.notify_all ();
+
+            if (sensor_thread.ready)
+            {
+                // This loop dispatches the sensor events to the appropriate handlers:
+
+                Accelerometer * accelerometer = Accelerometer::get_instance ();
+
+                while (application.get_state () != Application::DESTROYED)
+                {
+                    ALooper_pollAll (-1, nullptr, nullptr, nullptr);
+
+                    ASensorEvent event;
+
+                    while (ASensorEventQueue_hasEvents (sensor_queue) == 1)
+                    {
+                        if (ASensorEventQueue_getEvents (sensor_queue, &event, 1) >= 0)
+                        {
+                            switch (event.type)
+                            {
+                                case ASENSOR_TYPE_ACCELEROMETER:
+                                {
+                                    if (accelerometer)
+                                    {
+                                        accelerometer->set_state
+                                        (
+                                            event.acceleration.x,
+                                            event.acceleration.y,
+                                            event.acceleration.z
+                                        );
+                                    }
+
+                                    break;
+                                }
+
+                                case ASENSOR_TYPE_GYROSCOPE:
+                                {
+                                    break;
+                                }
+
+                                default: break;
+                            }
+                        }
+                    }
+
+                }
+            }
+        }
+
+        // -----------------------------------------------------------------------------------------
+
         void Native_Activity::on_create (void * saved_activity_state, size_t saved_state_size)
         {
             lock_guard< mutex > lock(state.mutex);
@@ -90,6 +197,13 @@
             application.set_state    (Application::ACTIVE);
 
             // AÑADIR UN EVENTO RESTART CUANDO CORRESPONDA...
+
+            // Se incializa el gestor de sensores:
+
+            android_sensor_manager.wake_up ();
+
+            sensor_thread.ready   = false;
+            sensor_thread.started = false;
 
             // Start the main thread:
 

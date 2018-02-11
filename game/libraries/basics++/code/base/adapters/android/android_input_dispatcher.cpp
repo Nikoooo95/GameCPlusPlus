@@ -79,7 +79,7 @@
             return false;
         }
 
-        void android_input_dispatcher (AInputQueue  * input_queue)
+        void android_input_dispatcher (AInputQueue * input_queue)
         {
             if (input_queue)
             {

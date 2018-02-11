@@ -20,35 +20,16 @@ using namespace std;
 
 namespace example {
 
-    Game_Scene::Game_Scene(){
-        state = LOADING;
-        suspended = true;
-        canvas_width  = 720;
-        canvas_height =  1280;
-        speedY = 500;
-        iSRight = true;
-
-
-        srand (unsigned(time(nullptr)));
-        initialize ();
-
-    }
-
+    // ---------------------------------------------------------------------------------------------
     bool Game_Scene::initialize () {
+        //state = LOADING;
         for(auto & button : buttons){
             button.isPressed = false;
         }
         return true;
     }
 
-    void Game_Scene::suspend () {
-        suspended = true;
-    }
-
-    void Game_Scene::resume () {
-        suspended = false;
-    }
-
+    // ---------------------------------------------------------------------------------------------
     void Game_Scene::handle (Event & event) {
         if (state == RUNNING || state == PAUSED || state == OVER){
             switch (event.id){
@@ -77,6 +58,43 @@ namespace example {
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    void Game_Scene::update (float time) {
+        if (!suspended) switch (state) {
+                case LOADING:       load_textures();        break;
+                case RUNNING:
+                case PAUSED:
+                case OVER :         run_simulation(time);   break;
+                case ERROR:                                 break;
+            }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    void Game_Scene::render (Context & context) {
+        if (!suspended) {
+            Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
+            if (!canvas) {
+                 canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
+            }
+
+            if (canvas) {
+                canvas->clear ();
+                switch (state) {
+                    case LOADING:   render_loading (*canvas);   break;
+                    case RUNNING:   render_playfield (*canvas); break;
+                    case PAUSED:    render_pause (*canvas);     break;
+                    case OVER:      render_over (*canvas);      break;
+                    case ERROR:                                 break;
+                }
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de comprobar sobre que opción ha pulsado el jugador
+     * @return el valor int sobre el que se ha pulsado
+     */
     int Game_Scene::optionAt(const Point2f &point) {
         if(state == RUNNING){
             for(int index = 0; index < nButtons; ++index){
@@ -109,38 +127,10 @@ namespace example {
         return -1;
     }
 
-    void Game_Scene::update (float time) {
-        if (!suspended) switch (state) {
-            case LOADING:    load_textures();                   break;
-            case RUNNING:
-            case PAUSED:
-            case OVER : run_simulation(time);   break;
-            case ERROR:                         break;
-        }
-    }
-
-    void Game_Scene::render (Context & context) {
-        if (!suspended) {
-            Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
-            if (!canvas) {
-                 canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
-            }
-
-            if (canvas) {
-                canvas->clear ();
-                switch (state) {
-                    case LOADING: render_loading   (*canvas); break;
-                    case RUNNING: render_playfield (*canvas); break;
-                    case PAUSED: render_pause       (*canvas); break;
-                    case OVER: render_over (*canvas); break;
-                    case ERROR:   break;
-                }
-            }
-        }
-
-
-    }
-
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método carga las texturas del atlas del menú
+     */
     void Game_Scene::load_textures () {
         if(state == LOADING) {
             Graphics_Context::Accessor context = director.lock_graphics_context();
@@ -148,15 +138,18 @@ namespace example {
                 atlas.reset(new Atlas("game-scene/game.sprites", context));
                 menuAtlas.reset(new Atlas("game-scene/pause.sprites", context));
                 state = atlas->good() ? (menuAtlas->good() ? RUNNING : ERROR) : ERROR;
-
                 if (state == RUNNING) {
                     create_sprites();
 
                 }
-            }   // Si las texturas se han cargado muy rápido
+            }
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de crear los sprites y botones y asignarles una posicion en el canvas
+     */
     void Game_Scene::create_sprites () {
 
         sprites[BACKGROUND].slice       = atlas->get_slice(ID(background));
@@ -180,57 +173,48 @@ namespace example {
         buttons[RIGHT].position         = Point2f(canvas_width-buttons[RIGHT].slice->width, buttons[RIGHT].slice->height/1.5f);
         buttons[PAUSE].position         = Point2f(canvas_width-buttons[RIGHT].slice->width, sprites[TOP].position[1]);
 
-        pause[BACKGROUND_PAUSE].slice   = menuAtlas->get_slice(ID(background));
-        menuButtons[PLAY].slice     = menuAtlas->get_slice(ID(resume));
-        menuButtons[MENU].slice       = menuAtlas->get_slice(ID(menu));
-        pause[TITLE].slice              = menuAtlas->get_slice(ID(title_pause));
+        menuSprites[BACKGROUND_PAUSE].slice     = menuAtlas->get_slice(ID(background));
+        menuButtons[PLAY].slice                 = menuAtlas->get_slice(ID(resume));
+        menuButtons[MENU].slice                 = menuAtlas->get_slice(ID(menu));
+        menuSprites[TITLE].slice                = menuAtlas->get_slice(ID(title_pause));
 
-        pause[BACKGROUND_PAUSE].position = Point2f(canvas_width/2, canvas_height/2);
-        menuButtons [PLAY].position = Point2f(canvas_width/2, canvas_height/2);
-        menuButtons[MENU].position    = Point2f(canvas_width/2, menuButtons[PLAY].position[1]-menuButtons[MENU].slice->height*2);
-        pause[TITLE].position           = Point2f(canvas_width/2, menuButtons[PLAY].position[1] + pause[TITLE].slice->height);
+        menuSprites[BACKGROUND_PAUSE].position  = Point2f(canvas_width/2, canvas_height/2);
+        menuButtons [PLAY].position             = Point2f(canvas_width/2, canvas_height/2);
+        menuButtons[MENU].position              = Point2f(canvas_width/2, menuButtons[PLAY].position[1]-menuButtons[MENU].slice->height*2);
+        menuSprites[TITLE].position             = Point2f(canvas_width/2, menuButtons[PLAY].position[1] + menuSprites[TITLE].slice->height);
 
         initialize();
         generate_platforms();
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga del update en cada frame. Dependiendo del estado del juego, llama a un
+     * método u otro. Tan solo será llamado si el juego se está ejecutando como tal. No puede darse
+     * el caso de que entre en Loading, aunque igualmente lo dejo puesto para el control de errores.
+     * @param time
+     */
     void Game_Scene::run_simulation (float time) {
         switch(state){
-            case LOADING:
-                break;
-            case RUNNING:
-                update_user(time);
-                break;
+            case LOADING:                       break;
+            case RUNNING:   update_user(time);  break;
             case PAUSED:
-            case OVER:
-                update_menu();
-                break;
-            case ERROR:
-                break;
+            case OVER:      update_menu();      break;
+            case ERROR:                         break;
         }
     }
 
-    void Game_Scene::update_menu() {
-        if(menuButtons[MENU].isPressed){
-            director.run_scene(std::shared_ptr< Scene >(new Menu_Scene));
-        }
-
-        if(menuButtons[PLAY].isPressed){
-            if(state == PAUSED){
-                state = RUNNING;
-            }
-            if(state == OVER){
-                director.run_scene(std::shared_ptr< Scene >(new Game_Scene));
-            }
-
-        }
-    }
-
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Update que controla cada frame el trascurso del juego. Se encarga de controlar el movimiento
+     * del personaje vertical y horizontal, el movimiento de las plataformas, el game over y la pausa
+     * @param time
+     */
     void Game_Scene::update_user (float time) {
-        float gravity = -9.8f;
         sprites[CHARACTER].position[1] += speedY*time + 0.5f*gravity*time*time;
         speedY += gravity;
-        if(speedY<0 && sprites[CHARACTER].position[1]<canvas_height-sprites[TOP].slice->height-sprites[CHARACTER].slice->height){
+        if(speedY<0 &&
+                sprites[CHARACTER].position[1]<canvas_height-sprites[TOP].slice->height-sprites[CHARACTER].slice->height){
             if(check_collisions()) {
                 speedY = 500;
             }
@@ -240,12 +224,11 @@ namespace example {
         }
 
         if(buttons[LEFT].isPressed){
-            sprites[CHARACTER].position[0] -= 500.f * time;
+            sprites[CHARACTER].position[0] -= speedX * time;
             iSRight = false;
-
         }
         if(buttons[RIGHT].isPressed){
-            sprites[CHARACTER].position[0] += 500.f * time;
+            sprites[CHARACTER].position[0] += speedX * time;
             iSRight = true;
         }
 
@@ -264,10 +247,54 @@ namespace example {
             state = PAUSED;
         }
 
+    }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Update que se llama en los menus Game-Over / Pausa. El menú es el mismo, pero dependiendo del
+     * estado realiza una función u otra.
+     */
+    void Game_Scene::update_menu() {
+        if(menuButtons[MENU].isPressed){
+            director.run_scene(std::shared_ptr< Scene >(new Menu_Scene));
+        }
+
+        if(menuButtons[PLAY].isPressed){
+            if(state == PAUSED){
+                state = RUNNING;
+            }
+            if(state == OVER){
+                director.run_scene(std::shared_ptr< Scene >(new Game_Scene));
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método es el encargado de renderizar el Loading durante la carga de los sprites.
+     * @param canvas
+     */
+    void Game_Scene::render_loading (Canvas & canvas) {
+        if(state == LOADING){
+            const Atlas::Slice * slice = atlas->get_slice(ID(loading));
+            if (slice) {
+                canvas.fill_rectangle
+                        (
+                                { canvas_width * .5f, canvas_height * .5f },
+                                { slice->width, slice->height},
+                                slice
+                        );
+            }
+        }
 
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Es el encargado de renderizar el campo de juego. Renderiza todos los elementos que se deben
+     * mostrar mientras se está jugando.
+     * @param canvas
+     */
     void Game_Scene::render_playfield (Canvas & canvas) {
         canvas.clear();
         if(state == RUNNING){
@@ -293,10 +320,7 @@ namespace example {
                                                { element.slice->width, element.slice->height },
                                                element.slice, FLIP_HORIZONTAL);
                     }
-
                 }
-
-
             }
 
             for(auto & button : buttons){
@@ -304,31 +328,18 @@ namespace example {
                                        { button.slice->width, button.slice->height },
                                        button.slice);
             }
-
-
-
             //canvas.set_transform(Transformation2f());
         }
     }
 
-    void Game_Scene::render_loading (Canvas & canvas) {
-        if(state == LOADING){
-            const Atlas::Slice * slice = atlas->get_slice(ID(loading));
-            if (slice) {
-                canvas.fill_rectangle
-                        (
-                                { canvas_width * .5f, canvas_height * .5f },
-                                { slice->width, slice->height},
-                                slice
-                        );
-            }
-        }
-
-    }
-
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método es el encargado de renderizar el menu de pausa.
+     * @param canvas
+     */
     void Game_Scene::render_pause(Canvas & canvas){
         canvas.clear();
-            for(auto & element : pause) {
+            for(auto & element : menuSprites) {
                 canvas.fill_rectangle({element.position[0], element.position[1]},
                                       {element.slice->width, element.slice->height},
                                       element.slice);
@@ -341,6 +352,21 @@ namespace example {
 
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método es el encargado de renderizar la pantalla de Game Over.
+     * @param canvas
+     */
+    void Game_Scene::render_over(Canvas & canvas){
+        menuButtons[PLAY].slice     = menuAtlas->get_slice(ID(play_again));
+        menuSprites[TITLE].slice    = menuAtlas->get_slice(ID(title_over));
+        render_pause(canvas);
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de rellenar el array de plataformas al iniciar la partida
+     */
     void Game_Scene::generate_platforms() {
         const Atlas::Slice * tempSlice = sprites[PLATFORM].slice;
         int tempN =(int) canvas_height+canvas_height/4;
@@ -351,6 +377,11 @@ namespace example {
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de comprobar si el personaje ha colisionado con alguna plataforma
+     * @return true si ha colisionado con una, false si no es así.
+     */
     bool Game_Scene::check_collisions() {
         for(auto & platform : platforms){
             if(sprites[CHARACTER].intersects(platform)) return true;
@@ -358,6 +389,11 @@ namespace example {
         return false;
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Move_Platforms se encarga de mover las plataformas hacia la parte inferior de la pantalla
+     * @param time
+     */
     void Game_Scene::move_platforms(float time) {
         float temp = sprites[CHARACTER].position[1] - canvas_height/2;
         for(auto & platform : platforms){
@@ -365,19 +401,18 @@ namespace example {
             if(platform.position[1]<sprites[DOWN].position[1]+sprites[DOWN].slice->height/2){
                 refresh_platforms(platform);
             }
-
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Se encarga de actualizar las plataformas que han salido por la parte inferior en una nueva
+     * parte de la zona superior para re-utilizarlas.
+     * @param platform
+     */
     void Game_Scene::refresh_platforms(Element & platform) {
         platform.position[0] = 3 + rand()%(canvas_width - 3);
         platform.position[1] = sprites[TOP].position[1] + rand()%(canvas_height+1-(int)sprites[TOP].position[1]);
-    }
-
-    void Game_Scene::render_over(Canvas & canvas){
-        menuButtons[PLAY].slice     = menuAtlas->get_slice(ID(play_again));
-        pause[TITLE].slice          = menuAtlas->get_slice(ID(title_over));
-        render_pause(canvas);
     }
 
 }

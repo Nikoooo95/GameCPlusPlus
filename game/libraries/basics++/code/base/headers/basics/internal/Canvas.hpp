@@ -18,7 +18,7 @@
     #include <basics/Point>
     #include <basics/Renderer>
     #include <basics/Size>
-    #include <basics/Text_Prefab>
+    #include <basics/Text_Layout>
     #include <basics/Texture_2D>
     #include <basics/Transformation>
 
@@ -112,7 +112,7 @@
             virtual void fill_rectangle  (const Point2f & bottom_left, const Size2f & size) { }
             virtual void fill_rectangle  (const Point2f & where, const Size2f & size, const Texture_2D   * texture, int handling = CENTER) { }
             virtual void fill_rectangle  (const Point2f & where, const Size2f & size, const Atlas::Slice * slice,   int handling = CENTER) { }
-            virtual void render          (const Point2f & where, const Size2f & size, const Text_Prefab  & prefab,  int handling = CENTER) { }
+            virtual void draw_text       (const Point2f & where, const Text_Layout & text_layout, int handling = TOP | LEFT);
 
         };
 

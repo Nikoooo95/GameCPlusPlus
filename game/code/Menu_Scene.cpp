@@ -23,6 +23,7 @@ namespace example {
 
     // ---------------------------------------------------------------------------------------------
     bool Menu_Scene::initialize () {
+        state = LOADING;
         for (auto & option : options) {
             option.isPressed = false;
         }
@@ -53,9 +54,7 @@ namespace example {
                 for(auto & option : options) option.isPressed = false;
                 break;
             }
-
         }
-
     }
 
     // ---------------------------------------------------------------------------------------------
@@ -164,7 +163,7 @@ namespace example {
                 state = HELPING;
             }
             if(options[EXIT].isPressed){
-                //TO-DO
+                director.run_scene (shared_ptr< Scene >());
             }
         }
     }

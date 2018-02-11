@@ -100,6 +100,8 @@
         private:
 
             void run_kernel ();
+            bool check_scene ();
+            void reset_viewport (Window::Accessor & window);
 
         };
 

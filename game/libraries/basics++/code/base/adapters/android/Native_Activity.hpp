@@ -25,6 +25,7 @@
     #include <android/input.h>
     #include <android/native_activity.h>
     #include <android/native_window.h>
+    #include <android/sensor.h>
 
     namespace basics { namespace internal
     {
@@ -66,9 +67,21 @@
                 mutex                mutex;
                 condition_variable   barrier;
                 atomic< bool >       ready;
-                ALooper            * looper  = nullptr;
+                ALooper            * looper = nullptr;
             }
             input_thread;
+
+            // Esto habría que llevarlo a Android_Sensor_Manager...
+            struct
+            {
+                unique_ptr< thread > instance;
+                mutex                mutex;
+                condition_variable   barrier;
+                atomic< bool >       started;
+                atomic< bool >       ready;
+                ALooper            * looper = nullptr;
+            }
+            sensor_thread;
 
             struct
             {
@@ -84,11 +97,7 @@
             {
             }
 
-           ~Native_Activity()
-            {
-                if (input_thread.instance->joinable ()) input_thread.instance->join ();
-                if ( main_thread.instance->joinable ())  main_thread.instance->join ();
-            }
+           ~Native_Activity();
 
         public:
 
@@ -102,10 +111,18 @@
                 return window;
             }
 
+            bool sensor_thread_is_ready () const
+            {
+                return sensor_thread.ready;
+            }
+
+            bool start_sensor_thread ();
+
         private:
 
-            void  main_thread_function ();
-            void input_thread_function ();
+            void   main_thread_function ();
+            void  input_thread_function ();
+            void sensor_thread_function ();
 
         public:
 

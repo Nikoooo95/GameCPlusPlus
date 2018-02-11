@@ -61,6 +61,7 @@ namespace basics
         }
         else
         {
+            kernel.exit = true;
         }
     }
 
@@ -160,13 +161,7 @@ namespace basics
                                 }
                             }
 
-                            Graphics_Context::Accessor graphics_context = window->lock_graphics_context ();
-
-                            if (graphics_context)
-                            {
-                                surface_width  = graphics_context->get_surface_width  ();
-                                surface_height = graphics_context->get_surface_height ();
-                            }
+                            reset_viewport (window);
 
                             state.graphics = true;
                         }
@@ -184,18 +179,7 @@ namespace basics
                     {
                         Window::Accessor window = window_handle.lock ();
 
-                        if (window)
-                        {
-                            Graphics_Context::Accessor graphics_context = window->lock_graphics_context ();
-
-                            if (graphics_context)
-                            {
-                                graphics_context->reset_viewport ();
-
-                                surface_width  = graphics_context->get_surface_width  ();
-                                surface_height = graphics_context->get_surface_height ();
-                            }
-                        }
+                        reset_viewport  (window);
 
                         break;
                     }
@@ -218,37 +202,11 @@ namespace basics
                     {
                         switch (event.id)
                         {
-                            case Window::GOT_FOCUS:
-                            {
-                                state.focused = true;
-                                break;
-                            }
-
-                            case Window::LOST_FOCUS:
-                            {
-                                state.focused = false;
-                                break;
-                            }
-
-                            case Window::LOST_GRAPHICS_CONTEXT:
-                            {
-                                break;
-                            }
-
+                            case Window::GOT_FOCUS:             state.focused = true;    break;
+                            case Window::LOST_FOCUS:            state.focused = false;   break;
+                            case Window::LOST_GRAPHICS_CONTEXT:                          break;
                             case Window::RESIZED:
-                            {
-                                Graphics_Context::Accessor graphics_context = window->lock_graphics_context ();
-
-                                if (graphics_context)
-                                {
-                                    graphics_context->reset_viewport ();
-
-                                    surface_width  = graphics_context->get_surface_width  ();
-                                    surface_height = graphics_context->get_surface_height ();
-                                }
-
-                                break;
-                            }
+                            case Window::VIEWPORT_RESIZED:      reset_viewport (window); break;
                         }
                     }
 
@@ -313,7 +271,29 @@ namespace basics
         }
         while (!kernel.exit && current_scene);
 
+        if (current_scene)
+        {
+            current_scene->finalize ();
+
+            current_scene.reset ();
+        }
+
         kernel.running = false;
+    }
+
+    // ---------------------------------------------------------------------------------------------
+
+    void Director::reset_viewport (Window::Accessor & window)
+    {
+        Graphics_Context::Accessor graphics_context = window->lock_graphics_context ();
+
+        if (graphics_context)
+        {
+            graphics_context->reset_viewport ();
+
+            surface_width  = graphics_context->get_surface_width  ();
+            surface_height = graphics_context->get_surface_height ();
+        }
     }
 
 }

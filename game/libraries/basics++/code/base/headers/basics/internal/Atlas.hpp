@@ -82,9 +82,9 @@
              * @param id Identificador del nuevo slice. No debe existir algún slice con el mismo id.
              * @param position Coordenadas del vértice inferior izquierdo del slice sobre la textura.
              * @param size Tamaño del slice dentro de la textura.
-             * @return true si no existía un slice con el mismo id y ha sido posible añadirlo.
+             * @return Puntero al slice si no existía otro con el mismo id o nullptr en caso contrario.
              */
-            bool add_slice (Id id, const Point2f & position, const Size2f & size);
+            Slice * add_slice (Id id, const Point2f & position, const Size2f & size);
 
             operator bool () const
             {
