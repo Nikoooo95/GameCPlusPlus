@@ -11,28 +11,25 @@
 #ifndef INTRO_SCENE_HEADER
 #define INTRO_SCENE_HEADER
 
-    #include <memory>
-    #include <basics/Canvas>
-    #include <basics/Scene>
-    #include <basics/Texture_2D>
-    #include <basics/Timer>
+#include <memory>
+#include <basics/Canvas>
+#include <basics/Scene>
+#include <basics/Texture_2D>
+#include <basics/Timer>
 
-    namespace example
-    {
+    namespace example {
 
         using basics::Timer;
         using basics::Canvas;
         using basics::Texture_2D;
         using basics::Graphics_Context;
 
-        class Intro_Scene : public basics::Scene
-        {
+        class Intro_Scene : public basics::Scene {
 
             /**
-             * Representa el estado de la escena en su conjunto.
-             */
-            enum State
-            {
+            * Representa el estado de la escena en su conjunto.
+            */
+            enum State {
                 UNINITIALIZED,
                 LOADING,
                 FADING_IN,
@@ -41,11 +38,6 @@
                 FINISHED,
                 ERROR
             };
-
-        private:
-
-            static constexpr float   ball_speed = 400.f;        ///< Velocidad a la que se mueve la bola.
-            static constexpr float player_speed = 300.f;        ///< Velocidad a la que se mueven ambos jugadores.
 
         private:
 
@@ -63,52 +55,54 @@
 
         public:
 
-            Intro_Scene()
-            {
+            Intro_Scene() {
                 state         = UNINITIALIZED;
                 suspended     = true;
                 canvas_width  = 720;
                 canvas_height =  1280;
             }
 
+            // -------------------------------------------------------------------------------------
             /**
              * Este método lo llama Director para conocer la resolución virtual con la que está
              * trabajando la escena.
              * @return Tamaño en coordenadas virtuales que está usando la escena.
              */
-            basics::Size2u get_view_size () override
-            {
+            basics::Size2u get_view_size () override {
                 return { canvas_width, canvas_height };
             }
 
+            // -------------------------------------------------------------------------------------
             /**
              * Aquí se inicializan los atributos que deben restablecerse cada vez que se inicia la escena.
              * @return
              */
             bool initialize () override;
 
+            // -------------------------------------------------------------------------------------
             /**
              * Este método lo invoca Director automáticamente cuando el juego pasa a segundo plano.
              */
-            void suspend () override
-            {
+            void suspend () override {
                 suspended = true;
             }
 
+            // -------------------------------------------------------------------------------------
             /**
              * Este método lo invoca Director automáticamente cuando el juego pasa a primer plano.
              */
-            void resume () override
-            {
+            void resume () override {
                 suspended = false;
             }
 
+            // -------------------------------------------------------------------------------------
             /**
              * Este método se invoca automáticamente una vez por fotograma para que la escena
              * actualize su estado.
              */
             void update (float time) override;
 
+            // -------------------------------------------------------------------------------------
             /**
              * Este método se invoca automáticamente una vez por fotograma para que la escena
              * dibuje su contenido.
@@ -117,9 +111,13 @@
 
         private:
 
+            // -------------------------------------------------------------------------------------
             void update_loading    ();
+            // -------------------------------------------------------------------------------------
             void update_fading_in  ();
+            // -------------------------------------------------------------------------------------
             void update_waiting    ();
+            // -------------------------------------------------------------------------------------
             void update_fading_out ();
 
         };

@@ -19,18 +19,9 @@
 using namespace basics;
 using namespace std;
 
+namespace example {
 
-namespace example
-{
-
-    Menu_Scene::Menu_Scene() {
-        state = LOADING;
-        suspended = true;
-        canvas_width = 720;
-        canvas_height = 1280;
-        initialize();
-    }
-
+    // ---------------------------------------------------------------------------------------------
     bool Menu_Scene::initialize () {
         for (auto & option : options) {
             option.isPressed = false;
@@ -38,6 +29,7 @@ namespace example
         return true;
     }
 
+    // ---------------------------------------------------------------------------------------------
     void Menu_Scene::handle (basics::Event & event){
         switch (event.id){
             case ID(touch-started):
@@ -66,6 +58,41 @@ namespace example
 
     }
 
+    // ---------------------------------------------------------------------------------------------
+    void Menu_Scene::update (float time) {
+        if (!suspended) switch (state) {
+                case LOADING: load_textures(); break;
+                case RUNNING: update_menu(); break;
+                case HELPING: update_helping(); break;
+                case ERROR: break;
+            }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    void Menu_Scene::render (Graphics_Context::Accessor & context) {
+        if(!suspended){
+            Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
+            if (!canvas) {
+                canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
+            }
+
+            if (canvas) {
+                canvas->clear ();
+                switch (state) {
+                    case LOADING: break;
+                    case RUNNING: render_menu (*canvas); break;
+                    case HELPING: render_helping (*canvas); break;
+                    case ERROR:   break;
+                }
+            }
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de comprobar sobre que opción ha pulsado el jugador
+     * @return el valor int sobre el que se ha pulsado
+     */
     int Menu_Scene::optionAt(const Point2f & point){
         for(int index = 0; index < nOptions; ++index){
             const Option & option = options[index];
@@ -81,34 +108,10 @@ namespace example
         return -1;
     }
 
-    void Menu_Scene::render (Graphics_Context::Accessor & context) {
-       if(!suspended){
-           Canvas * canvas = context->get_renderer< Canvas > (ID(canvas));
-           if (!canvas) {
-               canvas = Canvas::create (ID(canvas), context, {{ canvas_width, canvas_height }});
-           }
-
-           if (canvas) {
-               canvas->clear ();
-               switch (state) {
-                   case LOADING: break;
-                   case RUNNING: render_menu (*canvas); break;
-                   case HELPING: render_help (*canvas); break;
-                   case ERROR:   break;
-               }
-           }
-       }
-    }
-
-    void Menu_Scene::update (float time) {
-        if (!suspended) switch (state) {
-                case LOADING: load_textures(); break;
-                case RUNNING: update_menu(); break;
-                case HELPING: update_helping(); break;
-                case ERROR: break;
-            }
-    }
-
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método carga las texturas del atlas del menú
+     */
     void Menu_Scene::load_textures() {
         if(state == LOADING){
             Graphics_Context::Accessor context = director.lock_graphics_context();
@@ -122,33 +125,36 @@ namespace example
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de crear los sprites y botones y asignarles una posicion en el canvas
+     */
     void Menu_Scene::create_sprites() {
-        sprites[TITLE].slice   = atlas->get_slice(ID(title));
-        sprites[BACKGROUND].slice   = atlas->get_slice(ID(background));
-        sprites[TEXT_HELP].slice   = atlas->get_slice(ID(text_help));
+        sprites[TITLE].slice            = atlas->get_slice(ID(title));
+        sprites[BACKGROUND].slice       = atlas->get_slice(ID(background));
+        sprites[TEXT_HELP].slice        = atlas->get_slice(ID(text_help));
 
-        options[PLAY].slice = atlas->get_slice(ID(play));
-        options[HELP].slice = atlas->get_slice(ID(help));
-        options[EXIT].slice = atlas->get_slice(ID(exit));
-        options[BACK].slice = atlas->get_slice(ID(back));
+        options[PLAY].slice             = atlas->get_slice(ID(play));
+        options[HELP].slice             = atlas->get_slice(ID(help));
+        options[EXIT].slice             = atlas->get_slice(ID(exit));
+        options[BACK].slice             = atlas->get_slice(ID(back));
 
-        sprites[TITLE].position = Point2f(canvas_width/2, canvas_height-sprites[TITLE].slice->height*2.f);
-        sprites[BACKGROUND].position = Point2f(canvas_width/2, canvas_height/2);
-        sprites[TEXT_HELP].position = Point2f(canvas_width/2, canvas_height/2);
+        sprites[TITLE].position         = Point2f(canvas_width/2, canvas_height-sprites[TITLE].slice->height*2.f);
+        sprites[BACKGROUND].position    = Point2f(canvas_width/2, canvas_height/2);
+        sprites[TEXT_HELP].position     = Point2f(canvas_width/2, canvas_height/2);
 
-        options[PLAY].position = Point2f(canvas_width/2, canvas_height/2);
-        options[HELP].position = Point2f(canvas_width/2, options[PLAY].position[1]-options[HELP].slice->height*2);
-        options[EXIT].position = Point2f(canvas_width/2, options[HELP].position[1]-options[EXIT].slice->height*2);
-        options[BACK].position = Point2f(canvas_width/2, options[BACK].slice->height*3);
+        options[PLAY].position          = Point2f(canvas_width/2, canvas_height/2);
+        options[HELP].position          = Point2f(canvas_width/2, options[PLAY].position[1]-options[HELP].slice->height*2);
+        options[EXIT].position          = Point2f(canvas_width/2, options[HELP].position[1]-options[EXIT].slice->height*2);
+        options[BACK].position          = Point2f(canvas_width/2, options[BACK].slice->height*3);
 
     }
 
-    void Menu_Scene::update_helping() {
-        if (options[BACK].isPressed) {
-            state = RUNNING;
-        }
-    }
-
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga del update en cada frame durante el estado de Running y de la
+     * pulsación de botones durante este tiempo
+     */
     void Menu_Scene::update_menu() {
         if(state == RUNNING){
             if(options[PLAY].isPressed){
@@ -163,6 +169,20 @@ namespace example
         }
     }
 
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga del update en cada frame durante el estado de Helping
+     */
+    void Menu_Scene::update_helping() {
+        if (options[BACK].isPressed) {
+            state = RUNNING;
+        }
+    }
+
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de renderizar la escena durante el estado de Running
+     */
     void Menu_Scene::render_menu(Canvas &canvas) {
         canvas.clear();
         for(auto & element :  sprites){
@@ -181,7 +201,11 @@ namespace example
         }
     }
 
-    void Menu_Scene::render_help(Canvas &canvas) {
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método se encarga de renderizar la escena durante el estado de Helping
+     */
+    void Menu_Scene::render_helping(Canvas &canvas) {
         canvas.clear();
         canvas.fill_rectangle ({ sprites[TEXT_HELP].position[0], sprites[TEXT_HELP].position[1] },
                                { sprites[TEXT_HELP].slice->width, sprites[TEXT_HELP].slice->height },
@@ -192,5 +216,4 @@ namespace example
                                options[BACK].slice);
 
     }
-
 }

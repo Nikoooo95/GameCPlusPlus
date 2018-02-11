@@ -380,7 +380,4 @@ namespace example {
         render_pause(canvas);
     }
 
-
-
-
 }

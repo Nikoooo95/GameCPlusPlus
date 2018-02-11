@@ -92,7 +92,7 @@
 
             int speedY = 0;
             bool iSRight = true;
-            bool isPaused = false;
+           // bool isPaused = false;
 
             Button buttons[nButtons];
             Button menuButtons[nButtonsMenu];
