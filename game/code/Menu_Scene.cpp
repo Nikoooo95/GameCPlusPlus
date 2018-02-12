@@ -33,8 +33,7 @@ namespace example {
     // ---------------------------------------------------------------------------------------------
     void Menu_Scene::handle (basics::Event & event){
         switch (event.id){
-            case ID(touch-started):
-            case ID(touch-moved):{
+            case ID(touch-started):{
                 Point2f touchLocation = {*event[ID(x)].as< var::Float > (), *event[ID(y)].as< var::Float > () };
                 int optionTouched = optionAt(touchLocation);
                 if(state == RUNNING){
@@ -44,8 +43,9 @@ namespace example {
                         }
                     }
                 }
+                else
                 if(state == HELPING){
-                    options[BACK].isPressed = BACK == optionTouched;
+                    options[BACK].isPressed = true;
                 }
                 break;
             }
@@ -158,9 +158,11 @@ namespace example {
         if(state == RUNNING){
             if(options[PLAY].isPressed){
                 director.run_scene(std::shared_ptr< Scene >(new Game_Scene));
+                reset_options ();
             }
             if(options[HELP].isPressed){
                 state = HELPING;
+                reset_options ();
             }
             if(options[EXIT].isPressed){
                 director.run_scene (shared_ptr< Scene >());
@@ -175,6 +177,7 @@ namespace example {
     void Menu_Scene::update_helping() {
         if (options[BACK].isPressed) {
             state = RUNNING;
+            reset_options ();
         }
     }
 
@@ -214,5 +217,16 @@ namespace example {
                                { options[BACK].slice->width, options[BACK].slice->height },
                                options[BACK].slice);
 
+    }
+    // ---------------------------------------------------------------------------------------------
+    /**
+     * Este método resetea todos los botones a false.
+     */
+    void Menu_Scene::reset_options()
+    {
+        for (auto & option : options)
+        {
+            option.isPressed = false;
+        }
     }
 }
